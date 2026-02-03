@@ -1,0 +1,5 @@
+center_of_gravity: [0.0009927648929822532, 0.0006028307960452107, -0.043340498231155766]
+gravity_vector: [0.0, 0.0, -9.80665]
+origin_frame: base_link
+target_frame: wrist_ft_sensor_frame
+weight: 0.6858802149553923

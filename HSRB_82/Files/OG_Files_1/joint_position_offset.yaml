@@ -1,0 +1,14 @@
+arm_flex_joint:
+  position_offset: -2.750776694014816
+arm_lift_joint:
+  position_offset: -0.012833380786681038
+arm_roll_joint:
+  position_offset: -2.0419809940209053
+head_pan_joint:
+  position_offset: -3.961897402027128
+head_tilt_joint:
+  position_offset: 0.6457718232379019
+wrist_flex_joint:
+  position_offset: -2.0404017864765667
+wrist_roll_joint:
+  position_offset: -2.0640942119306906
