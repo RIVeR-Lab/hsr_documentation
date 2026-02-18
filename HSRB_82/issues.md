@@ -60,32 +60,6 @@ Additionally This took over an hour, so be patient.
 **Description:** would error out (forget what specifically)
 **Solution:** use ROS_DOMAIN_ID != 0 
 
-## Camera calibration
-**Description:** cameras cannot launch because of missing calibration files. The camera calibration files already exists but they are not located in the correct directory the bringup launch file is pointing to.
-
-**Solution:** some of the calibration files are located in /hsrb_robot/hsrb_bringup/config, others in the correct directory but some information is wrong.
-
-Replace all of the files in the following directories:
-- Files from folder *Files 1* to /etc/opt/tmc/robot/conf.d/calib_results
-- Files from folder *Files 2* to  ~/.ros/camera_info
-
-Then, in hsr_base.py (hsrb_bringup package), line 91, replace the camera_name with 'tgb_PS1080_PrimeSense'
-
-## Gripper issue
-**Description:** ros2 action set_distance, the gripper keeps opening and closing.
-
-**Solution:** the PID gains are set too high. Changed them in hsrb_controllers/hsrb_gripper_controller/src/hrh_gripper_set_distance_action.cpp package.
-
-## tmc_pgr_camera package missing
-**Description:** steps in HSR documentation make us remove the tmc_pgr_camera package. However, this is needed to launch the rgbd head camera.
-
-**Solution:** install flycapture (https://github.com/RhobanDeps/flycapture/tree/master). In head_center_camera.yaml, change video_device to /dev/video2 (video0 is gripper camera).
-
-## PATH_TOLERANCE_VIOLATED
-**Description:** base does not move because of the path_tolerance_violated error. This is because the odometry is not updating, the error between current and desired base pose keeps increasing. 
-
-**Solution:** in omni_base_controller.cpp, update the base_odometry to be the same as the wheel_odometry, since that is updating correctly.
-
 
 # Unsolved
 ## Python Interface
@@ -96,3 +70,39 @@ docker exec -it docker.humble.diag.service /bin/bash -c ". /etc/opt/tmc/robot/ro
 **Solution:** needs something running on host pc?
 - seems to time out waiting for a service
 - Errors with ddsi_udp_conn_write to udp/<IP> fixed by ROS_DOMAIN_ID != 0 I believe
+
+## Can't access hand camera
+**Description:** hand camera not accessible through rviz
+
+Also can't access through cheese or kamoso
+- though also aren't able to access head center cam which we can access through rviz so maybe just prohibited by some hsr thing
+- were able to get a choppy picture before for head center cam once
+
+Tried:
+v4l2-ctl --device=/dev/video2 --stream-mmap --stream-count=3 --verbose
+
+Throws:
+        VIDIOC_REQBUFS returned 0 (Success)
+		VIDIOC_QUERYBUF returned 0 (Success)
+		VIDIOC_QUERYBUF returned 0 (Success)
+		VIDIOC_QUERYBUF returned 0 (Success)
+		VIDIOC_QUERYBUF returned 0 (Success)
+		VIDIOC_QBUF returned 0 (Success)
+		VIDIOC_QBUF returned 0 (Success)
+		VIDIOC_QBUF returned 0 (Success)
+		VIDIOC_QBUF returned 0 (Success)
+		VIDIOC_STREAMON returned -1 (Input/output error)
+
+Tried:
+gst-launch-1.0 pipewiresrc path=34 ! videoconvert ! autovideosink
+
+** path=34 is from path= listed from `gst-device-monitor-1.0 Video/Source`
+
+Get: 
+black screen, not recieving data...
+
+Even nothing when doing `gst-launch-1.0 pipewiresrc path=34 ! videoconvert ! video/x-raw,format=RGB ! fakesink dump=true` which should cat the raw bits.
+
+#### Next steps:   
+- check these commands on 41
+- open up case and check wiring (hsrb.io has some guidance here)
