@@ -81,6 +81,7 @@ Also can't access through cheese or kamoso
 	v4l2-ctl --device=/dev/video2 --stream-mmap --stream-count=3 --verbose
 
 Throws:
+```
         VIDIOC_REQBUFS returned 0 (Success)
 		VIDIOC_QUERYBUF returned 0 (Success)
 		VIDIOC_QUERYBUF returned 0 (Success)
@@ -91,13 +92,14 @@ Throws:
 		VIDIOC_QBUF returned 0 (Success)
 		VIDIOC_QBUF returned 0 (Success)
 		VIDIOC_STREAMON returned -1 (Input/output error)
+```
 
-Interesting:
+Interesting:\
 This gives same error for video2 (center cam that works)
 But it works on 41...
 
 #### Tried:
-gst-launch-1.0 pipewiresrc path=34 ! videoconvert ! autovideosink
+`gst-launch-1.0 pipewiresrc path=34 ! videoconvert ! autovideosink`
 
 ** path=34 is from path= listed from `gst-device-monitor-1.0 Video/Source`
 
@@ -124,16 +126,33 @@ Therefore likely disconnected cable (1011 or 1008)
 
 #### Partial solution:
 
-This seems to fix camera for command line streaming, still not working in rviz. **Make sure that the device is the hand cam should be video0, but might be swapped.**
+This seems to fix camera for command line streaming, **still NOT working in rviz**. Make sure that the device is the hand cam should be video0, **but might be swapped to video2.**
 
+```
 v4l2-ctl --device=/dev/**video0** --set-ctrl=exposure_auto=1
 v4l2-ctl --device=/dev/**video0** --set-ctrl=exposure_absolute=300
 v4l2-ctl --device=/dev/**video0** --stream-mmap --stream-count=3 --verbose
+```
 
 Potentially needed to be executed prior to the above commands (resets usbs, but also **might switch video0 and video2**):
+```
 echo 0 | sudo tee /sys/bus/usb/devices/1-1.4/authorized
 sleep 5
 echo 1 | sudo tee /sys/bus/usb/devices/1-1.4/authorized
+```
+
+`v4l2-ctl --list-devices` should result in the following if the video channels are right:
+```
+NCM13-J-02 (usb-0000:00:1a.0-1.4):
+	/dev/video0
+	/dev/video1
+	/dev/media0
+
+NCM13-J-02 (usb-0000:02:00.0-1.3.1):
+	/dev/video2
+	/dev/video3
+	/dev/media1
+```
 
 Likely explanation:
 
@@ -142,6 +161,7 @@ We were getting an initial frame some of the time, but only the first frame or t
 When a UVC camera powers up, the image sensor goes through an initialization sequence — it charges up, sets exposure, and produces a burst of frames before any control negotiation happens. Those first 2-3 frames are essentially "startup frames" from the sensor's cold start. After that, the camera firmware tries to apply the UVC control settings (including control 8, exposure), fails with the -32 error, and the sensor either shuts down or enters a fault state. This is why you see data briefly then nothing.
 
 ## Can't access stereo camera
-**Description:** Can't access 
+**Description:** Can't access cameras from rviz
 
 **Attempts:**
+`flycap` allows us to access the individual cameras... so not hardware
