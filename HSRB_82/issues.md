@@ -129,9 +129,9 @@ Therefore likely disconnected cable (1011 or 1008)
 This seems to fix camera for command line streaming, **still NOT working in rviz**. Make sure that the device is the hand cam should be video0, **but might be swapped to video2.**
 
 ```
-v4l2-ctl --device=/dev/**video0** --set-ctrl=exposure_auto=1
-v4l2-ctl --device=/dev/**video0** --set-ctrl=exposure_absolute=300
-v4l2-ctl --device=/dev/**video0** --stream-mmap --stream-count=3 --verbose
+v4l2-ctl --device=/dev/video0 --set-ctrl=exposure_auto=1
+v4l2-ctl --device=/dev/video0 --set-ctrl=exposure_absolute=300
+v4l2-ctl --device=/dev/video0 --stream-mmap --stream-count=3 --verbose
 ```
 
 Potentially needed to be executed prior to the above commands (resets usbs, but also **might switch video0 and video2**):
@@ -160,8 +160,30 @@ We were getting an initial frame some of the time, but only the first frame or t
 
 When a UVC camera powers up, the image sensor goes through an initialization sequence — it charges up, sets exposure, and produces a burst of frames before any control negotiation happens. Those first 2-3 frames are essentially "startup frames" from the sensor's cold start. After that, the camera firmware tries to apply the UVC control settings (including control 8, exposure), fails with the -32 error, and the sensor either shuts down or enters a fault state. This is why you see data briefly then nothing.
 
-## Can't access stereo camera
+#### Final Solution:
+
+The usb-b mini cable in the hand was bent, swapping that and plugging into usb port on the robot allows the camera to function. (USB bar on top didn't have enough bandwidth, but the silver ones on the bottom right did)
+
+**TODO:** Full solution will likely be stripping the cable and splicing on the new head as rerouting cable seems extremely difficult. Awaiting instruction from Taskin. 
+
+## Can't access stereo head cameras
 **Description:** Can't access cameras from rviz
 
 **Attempts:**
-`flycap` allows us to access the individual cameras... so not hardware
+The command `flycap` allows us to access the individual cameras... so not hardware **(can be used to identify left and right)**
+
+KEY ERROR: 
+`Not found key 'cameras' or 'cameras' node type is not sequence.`
+
+This is from the `src/tmc_drivers/tmc_pgr_camera/src/tmc_pgr_camera/yaml_point_grey_camera_system_setting.cpp` file
+
+Error is while parsing camera ids in line 192.
+
+This led me to looking at the stereo camera yaml file in `/etc/opt/tmc/robot/conf.d/calib_results/stereo_camera_params.yaml` (specified in line 47 of `src/hsrb_robot/hsrb_bringup/hsrb_bringup/launch/sensors/stereo_camera.py`). The file is in the wrong format according to the comments in `yaml_point_grey_camera_system_setting.cpp`.
+
+**Solution:**
+Replace with the proper [file](Files/Files%201//stereo_camera_params.yaml) that only includes the camera id's (found in flycap).
+
+The LEFT camera (the one on the right if you are looking at the face) should be listed as master. Make sure to check that the id's are correct, probably not the ones listed.
+
+*Note: The point grey camera system mentions additional parameters, but that was deprecated and relocated to `src/tmc_drivers/tmc_pgr_camera/launch/capture.launch.py`*
