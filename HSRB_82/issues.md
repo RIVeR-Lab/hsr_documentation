@@ -1,6 +1,8 @@
 This augments the documentation found here:
 https://git.hsr.io/tmc/hsr-ros2-setup/-/blob/main/README-EN.md
 
+Also in this repo [here](../SetupDocs-3-2-26.md)
+
 # Steps that we needed help with
 ## Unplug HDMI
 **Description:** instructions say we must disconnect the head display HDMI
@@ -60,8 +62,6 @@ Additionally This took over an hour, so be patient.
 **Description:** would error out (forget what specifically)
 **Solution:** use ROS_DOMAIN_ID != 0 
 
-
-# Unsolved
 ## Python Interface
 **Description:** errors when running 
 
@@ -187,3 +187,7 @@ Replace with the proper [file](Files/Files%201//stereo_camera_params.yaml) that 
 The LEFT camera (the one on the right if you are looking at the face) should be listed as master. Make sure to check that the id's are correct, probably not the ones listed.
 
 *Note: The point grey camera system mentions additional parameters, but that was deprecated and relocated to `src/tmc_drivers/tmc_pgr_camera/launch/capture.launch.py`*
+
+
+
+# Unsolved
